@@ -1,9 +1,9 @@
-export type RuntimeMode = 'persistent-file'
+export type RuntimeMode = 'persistent-sqlite'
 
 export function shouldUseDatabase() {
-  return false
+  return true
 }
 
 export function getRuntimeMode(): RuntimeMode {
-  return 'persistent-file'
+  return 'persistent-sqlite'
 }

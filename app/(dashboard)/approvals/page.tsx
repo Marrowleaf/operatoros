@@ -1,14 +1,22 @@
 export const dynamic = 'force-dynamic'
 
 import { getApprovals } from '@/src/lib/store'
+import { requireOwnerPage } from '@/src/lib/owner-page-auth'
 
 export default async function ApprovalsPage() {
+  await requireOwnerPage('/approvals')
   const approvals = await getApprovals('all')
 
   return (
     <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '56px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <div style={{ maxWidth: 980, margin: '0 auto' }}>
-        <p style={{ color: '#67e8f9', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.24em' }}>Operator controls</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <p style={{ color: '#67e8f9', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.24em', margin: 0 }}>Operator controls</p>
+          <form method="post" action="/api/owner/logout">
+            <input type="hidden" name="redirectTo" value="/owner/login" />
+            <button style={{ borderRadius: 16, border: '1px solid #3f3f46', background: 'transparent', color: '#f4f4f5', fontWeight: 700, padding: '12px 16px', cursor: 'pointer' }}>Log out</button>
+          </form>
+        </div>
         <h1 style={{ marginTop: 10, fontSize: 'clamp(34px, 6vw, 54px)' }}>Approvals</h1>
         <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
           {approvals.map((approval) => (

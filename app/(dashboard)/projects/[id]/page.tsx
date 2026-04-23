@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { getProjectById } from '@/src/lib/store'
+import { requireOwnerPage } from '@/src/lib/owner-page-auth'
 import { notFound } from 'next/navigation'
 
 function actionButton() {
@@ -17,6 +18,7 @@ function actionButton() {
 
 export default async function ProjectWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  await requireOwnerPage(`/projects/${id}`)
   const project = await getProjectById(id)
 
   if (!project) {
@@ -37,6 +39,10 @@ export default async function ProjectWorkspacePage({ params }: { params: Promise
             <a href={publicProjectHref} style={{ ...actionButton(), textDecoration: 'none', display: 'inline-block' }}>Open customer portal</a>
             {project.memory.draft ? <a href={publicPreviewHref} style={{ ...actionButton(), textDecoration: 'none', display: 'inline-block' }}>Open preview</a> : null}
             <a href={`/runs/${project.id}`} style={{ ...actionButton(), textDecoration: 'none', display: 'inline-block' }}>Replay</a>
+            <form method="post" action="/api/owner/logout">
+              <input type="hidden" name="redirectTo" value="/owner/login" />
+              <button style={actionButton()}>Log out</button>
+            </form>
           </div>
         </section>
 

@@ -1,5 +1,7 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
+
 import type { PackageType } from '@/src/policies/packages'
 
 export type QuoteRecord =
@@ -119,13 +121,8 @@ const DEFAULT_DB: Database = {
   actions: [],
 }
 
-const configuredPath = process.env.OPERATOROS_DATA_PATH?.trim()
-const DB_PATH = configuredPath
-  ? path.isAbsolute(configuredPath)
-    ? configuredPath
-    : path.join(process.cwd(), configuredPath)
-  : path.join(process.cwd(), 'data', 'operatoros-db.json')
-const DATA_DIR = path.dirname(DB_PATH)
+const DEFAULT_JSON_PATH = path.join(process.cwd(), 'data', 'operatoros-db.json')
+const DEFAULT_SQLITE_PATH = path.join(process.cwd(), 'data', 'operatoros.db')
 let writeQueue: Promise<unknown> = Promise.resolve()
 
 export function nowIso() {
@@ -140,34 +137,129 @@ export function createPublicToken() {
   return crypto.randomUUID().replace(/-/g, '')
 }
 
-async function ensureDbFile() {
-  await mkdir(DATA_DIR, { recursive: true })
+function cloneDefaultDb(): Database {
+  return {
+    leads: [],
+    customers: [],
+    projects: [],
+    approvals: [],
+    actions: [],
+  }
+}
+
+function resolveConfiguredPath(configuredPath: string) {
+  return path.isAbsolute(configuredPath) ? configuredPath : path.join(process.cwd(), configuredPath)
+}
+
+function getLegacyJsonPath() {
+  const configuredPath = process.env.OPERATOROS_DATA_PATH?.trim()
+  if (!configuredPath) {
+    return DEFAULT_JSON_PATH
+  }
+
+  const resolvedPath = resolveConfiguredPath(configuredPath)
+  return resolvedPath.endsWith('.json') ? resolvedPath : null
+}
+
+export function getDatabasePath() {
+  const configuredPath = process.env.OPERATOROS_DATABASE_PATH?.trim()
+  if (configuredPath) {
+    return resolveConfiguredPath(configuredPath)
+  }
+
+  const legacyJsonPath = getLegacyJsonPath()
+  if (legacyJsonPath) {
+    return legacyJsonPath.replace(/\.json$/i, '.sqlite')
+  }
+
+  const fallbackPath = process.env.OPERATOROS_DATA_PATH?.trim()
+  return fallbackPath ? resolveConfiguredPath(fallbackPath) : DEFAULT_SQLITE_PATH
+}
+
+function normalizeDb(parsed: Partial<Database> | null | undefined): Database {
+  return {
+    leads: parsed?.leads ?? [],
+    customers: parsed?.customers ?? [],
+    projects: parsed?.projects ?? [],
+    approvals: parsed?.approvals ?? [],
+    actions: parsed?.actions ?? [],
+  }
+}
+
+async function readLegacyJsonSnapshot() {
+  const legacyJsonPath = getLegacyJsonPath()
+  if (!legacyJsonPath) {
+    return null
+  }
+
   try {
-    await readFile(DB_PATH, 'utf8')
+    const raw = await readFile(legacyJsonPath, 'utf8')
+    return normalizeDb(JSON.parse(raw) as Partial<Database>)
   } catch {
-    await writeFile(DB_PATH, JSON.stringify(DEFAULT_DB, null, 2), 'utf8')
+    return null
+  }
+}
+
+function openDatabase() {
+  const db = new DatabaseSync(getDatabasePath())
+  db.exec('PRAGMA journal_mode = WAL;')
+  db.exec('PRAGMA busy_timeout = 5000;')
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS app_state (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `)
+  return db
+}
+
+async function ensureDatabaseReady() {
+  const databasePath = getDatabasePath()
+  await mkdir(path.dirname(databasePath), { recursive: true })
+
+  const db = openDatabase()
+  try {
+    const row = db.prepare('SELECT data FROM app_state WHERE id = 1').get() as { data: string } | undefined
+    if (!row) {
+      const initialState = (await readLegacyJsonSnapshot()) ?? cloneDefaultDb()
+      db.prepare('INSERT INTO app_state (id, data, updated_at) VALUES (1, ?, ?)').run(JSON.stringify(initialState), nowIso())
+    }
+  } finally {
+    db.close()
   }
 }
 
 export async function readDb(): Promise<Database> {
-  await ensureDbFile()
-  const raw = await readFile(DB_PATH, 'utf8')
-  const parsed = JSON.parse(raw) as Partial<Database>
+  await ensureDatabaseReady()
 
-  return {
-    leads: parsed.leads ?? [],
-    customers: parsed.customers ?? [],
-    projects: parsed.projects ?? [],
-    approvals: parsed.approvals ?? [],
-    actions: parsed.actions ?? [],
+  const db = openDatabase()
+  try {
+    const row = db.prepare('SELECT data FROM app_state WHERE id = 1').get() as { data: string } | undefined
+    return normalizeDb(row ? (JSON.parse(row.data) as Partial<Database>) : cloneDefaultDb())
+  } finally {
+    db.close()
   }
 }
 
-export async function writeDb(db: Database) {
-  await ensureDbFile()
-  const tmpPath = `${DB_PATH}.tmp`
-  await writeFile(tmpPath, JSON.stringify(db, null, 2), 'utf8')
-  await rename(tmpPath, DB_PATH)
+export async function writeDb(nextDb: Database) {
+  await ensureDatabaseReady()
+
+  const db = openDatabase()
+  try {
+    db.exec('BEGIN IMMEDIATE')
+    db.prepare('UPDATE app_state SET data = ?, updated_at = ? WHERE id = 1').run(JSON.stringify(normalizeDb(nextDb)), nowIso())
+    db.exec('COMMIT')
+  } catch (error) {
+    try {
+      db.exec('ROLLBACK')
+    } catch {
+      // ignore rollback failures
+    }
+    throw error
+  } finally {
+    db.close()
+  }
 }
 
 export async function updateDb<T>(updater: (db: Database) => T | Promise<T>): Promise<T> {
@@ -267,7 +359,5 @@ export async function getActionsForProject(projectId: string) {
 }
 
 export async function resetDb() {
-  await writeDb({ ...DEFAULT_DB })
+  await writeDb(cloneDefaultDb())
 }
-
-export { DB_PATH }
