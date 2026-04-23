@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  lead
+  quoted
+  awaiting_payment
+  in_progress
+  in_revision
+  delivered
+  paused
+  escalated
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+enum IncidentSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  company   String?
+  createdAt DateTime  @default(now())
+  projects  Project[]
+}
+
+model Lead {
+  id             String   @id @default(cuid())
+  name           String
+  email          String
+  company        String?
+  offerSummary   String
+  targetAudience String
+  primaryGoal    String
+  packageHint    String?
+  avoidNotes     String?
+  createdAt      DateTime @default(now())
+}
+
+model Project {
+  id            String         @id @default(cuid())
+  customerId    String
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  status        ProjectStatus  @default(lead)
+  packageType   String?
+  quotedPrice   Int?
+  paidAmount    Int?           @default(0)
+  deliveryUrl   String?
+  memoryJson    Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  actions       Action[]
+  approvals     Approval[]
+  incidents     Incident[]
+}
+
+model Action {
+  id         String   @id @default(cuid())
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id])
+  type       String
+  riskLevel  String
+  status     String
+  reason     String?
+  inputJson  Json?
+  outputJson Json?
+  createdAt  DateTime @default(now())
+}
+
+model Approval {
+  id          String         @id @default(cuid())
+  projectId   String?
+  project     Project?       @relation(fields: [projectId], references: [id])
+  actionType  String
+  reason      String
+  payloadJson Json?
+  status      ApprovalStatus @default(pending)
+  resolverNote String?
+  createdAt   DateTime       @default(now())
+  resolvedAt  DateTime?
+}
+
+model Incident {
+  id         String           @id @default(cuid())
+  projectId  String?
+  project    Project?         @relation(fields: [projectId], references: [id])
+  severity   IncidentSeverity
+  category   String
+  summary    String
+  status     String           @default("open")
+  createdAt  DateTime         @default(now())
+}
+
+model Policy {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  active     Boolean  @default(true)
+  configJson Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

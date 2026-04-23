@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OperatorOS Studio Brief</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="badge">Brief</div>
+      <div class="nav-links">
+        <a href="../">Home</a>
+        <a href="../pricing/">Pricing</a>
+        <a href="../faq/">FAQ</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1>Tell the operator what you need.</h1>
+      <p>Give a clear brief and the system will generate the best-fit quote.</p>
+      <p class="small">This live public version uses a client-side demo quote engine.</p>
+    </section>
+
+    <form id="briefForm" class="section card form">
+      <label>Your name<input name="name" required /></label>
+      <label>Email<input name="email" type="email" required /></label>
+      <label>Company or project<input name="company" /></label>
+      <label>What are you launching?<textarea name="offerSummary" required></textarea></label>
+      <label>Who is it for?<input name="targetAudience" required /></label>
+      <label>What action should the visitor take?<input name="primaryGoal" required /></label>
+      <label>Which package sounds closest?<input name="packageHint" /></label>
+      <button class="btn primary" type="submit">Generate my quote</button>
+    </form>
+
+    <div id="result" class="result" hidden></div>
+  </div>
+
+  <script src="../quote.js"></script>
+  <script>
+    const form = document.getElementById('briefForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const quote = window.OperatorOSDemo.generateQuote(data);
+      result.hidden = false;
+      if (quote.status === 'ok') {
+        result.innerHTML = `<div class="badge">Demo quote</div><h2>${quote.packageType} — £${quote.price}</h2><p>${quote.reason}</p>`;
+      } else {
+        result.innerHTML = `<div class="badge">Needs escalation</div><h2>Custom review needed</h2><p>${quote.reason}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
