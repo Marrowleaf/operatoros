@@ -1,6 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
+
+import { SiteShell } from '@/components/site-shell'
 
 type QuoteResponse = {
   projectId: string
@@ -23,25 +26,11 @@ function Field({
   textarea?: boolean
   required?: boolean
 }) {
-  const style = {
-    width: '100%',
-    borderRadius: 16,
-    border: '1px solid #3f3f46',
-    background: '#09090b',
-    color: '#f4f4f5',
-    padding: '14px 16px',
-    font: 'inherit',
-  }
-
   return (
-    <label style={{ display: 'grid', gap: 8 }}>
-      <span style={{ fontSize: 14, fontWeight: 600, color: '#e4e4e7' }}>{label}</span>
-      {textarea ? (
-        <textarea required={required} name={name} style={{ ...style, minHeight: 120 }} />
-      ) : (
-        <input required={required} name={name} style={style} />
-      )}
-    </label>
+    <div className="field">
+      <label htmlFor={name}>{label}</label>
+      {textarea ? <textarea id={name} required={required} name={name} /> : <input id={name} required={required} name={name} />}
+    </div>
   )
 }
 
@@ -77,59 +66,91 @@ export default function BriefPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '64px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
-        <p style={{ marginBottom: 12, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#67e8f9' }}>OperatorOS Studio</p>
-        <h1 style={{ fontSize: 'clamp(38px, 6vw, 60px)', margin: 0 }}>Tell the operator what you need.</h1>
-        <p style={{ marginTop: 18, maxWidth: 700, color: '#d4d4d8', lineHeight: 1.7 }}>
-          Submit a brief and the system will create a real project record, produce a bounded quote, and generate the first landing page draft immediately.
-        </p>
+    <SiteShell>
+      <section className="hero">
+        <div className="grid-2">
+          <div>
+            <p className="eyebrow">Start a project</p>
+            <h1 className="page-title">Tell the operator what you need.</h1>
+            <p className="page-copy">
+              Submit a brief and the system will create a real project record, generate a bounded quote, and produce the first landing page draft immediately.
+            </p>
+            <ul className="feature-list">
+              <li>Brief gets stored as a real project, not a dead lead form</li>
+              <li>Quote stays inside policy bands or escalates cleanly</li>
+              <li>Client portal and preview links are generated when available</li>
+            </ul>
+          </div>
 
-        <form onSubmit={onSubmit} style={{ marginTop: 32, display: 'grid', gap: 20, borderRadius: 28, border: '1px solid #3f3f46', background: '#18181b', padding: 24 }}>
-          <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+          <aside className="info-block">
+            <p className="section-label">What to include</p>
+            <h2 className="info-title">The clearer the brief, the better the first draft.</h2>
+            <p className="info-copy">
+              Focus on the offer, target audience, and the one action you want a visitor to take. That is enough for the operator to quote and draft safely.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section className="section">
+        <form onSubmit={onSubmit} className="form-shell field-grid">
+          <div className="field-grid field-grid--2">
             <Field label="Your name" name="name" />
             <Field label="Email" name="email" />
           </div>
           <Field label="Company or project" name="company" required={false} />
           <Field label="What are you launching?" name="offerSummary" textarea />
-          <Field label="Who is it for?" name="targetAudience" />
-          <Field label="What action should the visitor take?" name="primaryGoal" />
+          <div className="field-grid field-grid--2">
+            <Field label="Who is it for?" name="targetAudience" />
+            <Field label="What action should the visitor take?" name="primaryGoal" />
+          </div>
           <Field label="Which package sounds closest?" name="packageHint" required={false} />
-          <button disabled={loading} style={{ borderRadius: 18, background: '#67e8f9', color: '#111827', fontWeight: 700, border: 0, padding: '14px 20px', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Generating quote…' : 'Generate my quote'}
-          </button>
+          <div className="button-row">
+            <button disabled={loading} className="button" type="submit">
+              {loading ? 'Generating quote…' : 'Generate my quote'}
+            </button>
+            <Link href="/pricing" className="button-ghost">
+              Review packages
+            </Link>
+          </div>
         </form>
 
-        {error ? (
-          <div style={{ marginTop: 24, borderRadius: 18, border: '1px solid rgba(244,63,94,0.35)', background: 'rgba(244,63,94,0.12)', padding: 18, color: '#fecdd3' }}>{error}</div>
-        ) : null}
+        {error ? <div className="result-card result-card--error">{error}</div> : null}
 
         {result ? (
-          <div style={{ marginTop: 24, borderRadius: 28, border: '1px solid rgba(103,232,249,0.35)', background: 'rgba(103,232,249,0.12)', padding: 24 }}>
-            <p style={{ margin: 0, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#a5f3fc' }}>Quote result {result.mode ? `(${result.mode})` : ''}</p>
+          <div className="result-card">
+            <p className="section-label">Quote result {result.mode ? `(${result.mode})` : ''}</p>
             {result.quote.status === 'ok' ? (
               <>
-                <h2 style={{ marginTop: 10, marginBottom: 0, fontSize: 30 }}>{result.quote.packageType} — £{result.quote.price}</h2>
-                <p style={{ marginTop: 12, color: '#ecfeff', lineHeight: 1.6 }}>{result.quote.reason}</p>
-                <p style={{ marginTop: 12, color: '#d4d4d8' }}>Project ID: {result.projectId}</p>
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
+                <h2 className="result-title">
+                  {result.quote.packageType} — £{result.quote.price}
+                </h2>
+                <p className="page-copy">{result.quote.reason}</p>
+                <div className="portal-meta">
+                  <span className="status-badge">Project ID: {result.projectId}</span>
+                </div>
+                <div className="button-row">
                   {result.projectUrl ? (
-                    <a href={result.projectUrl} style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Open project portal</a>
+                    <a href={result.projectUrl} className="button">
+                      Open project portal
+                    </a>
                   ) : null}
                   {result.previewUrl ? (
-                    <a href={result.previewUrl} style={{ borderRadius: 16, border: '1px solid #67e8f9', color: '#ecfeff', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Preview draft</a>
+                    <a href={result.previewUrl} className="button-secondary">
+                      Preview draft
+                    </a>
                   ) : null}
                 </div>
               </>
             ) : (
               <>
-                <h2 style={{ marginTop: 10, marginBottom: 0, fontSize: 30 }}>Needs escalation</h2>
-                <p style={{ marginTop: 12, color: '#ecfeff', lineHeight: 1.6 }}>{result.quote.reason}</p>
+                <h2 className="result-title">Needs escalation</h2>
+                <p className="page-copy">{result.quote.reason}</p>
               </>
             )}
           </div>
         ) : null}
-      </div>
-    </main>
+      </section>
+    </SiteShell>
   )
 }

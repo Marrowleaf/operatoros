@@ -1,43 +1,79 @@
+import Link from 'next/link'
+
+import { SiteShell } from '@/components/site-shell'
+
 const packages = [
   {
     name: 'Refresh',
     price: '£79',
+    description: 'Best for improving an existing page without widening scope.',
     bullets: ['Existing-page refresh', 'Copy tightening', '1 revision round'],
   },
   {
     name: 'Starter',
     price: '£99–149',
+    description: 'For a clean single-page launch with one core conversion path.',
     bullets: ['One landing page', 'Core CTA flow', '1 revision round'],
   },
   {
     name: 'Pro',
     price: '£199–249',
+    description: 'For higher-stakes launches needing a stronger positioning pass.',
     bullets: ['Custom landing page', 'Stronger copy pass', '2 revision rounds'],
   },
 ]
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-4xl font-semibold">Simple packages. Clear scope.</h1>
-        <p className="mt-4 max-w-2xl text-zinc-400">
-          OperatorOS Studio uses fixed pricing bands so the AI can quote safely and consistently.
+    <SiteShell>
+      <section className="hero">
+        <p className="eyebrow">Pricing</p>
+        <h1 className="page-title">Simple packages. Bounded scope. Clear operator behaviour.</h1>
+        <p className="page-copy">
+          OperatorOS uses fixed pricing bands so the system can quote safely, consistently, and without inventing scope on the fly.
         </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+      </section>
+
+      <section className="section">
+        <div className="grid-3">
           {packages.map((pkg) => (
-            <div key={pkg.name} className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-              <h2 className="text-2xl font-semibold">{pkg.name}</h2>
-              <p className="mt-2 text-3xl text-cyan-300">{pkg.price}</p>
-              <ul className="mt-6 grid gap-3 text-zinc-300">
+            <article key={pkg.name} className="card">
+              <div className="status-note">{pkg.name}</div>
+              <h2 className="card-title">{pkg.price}</h2>
+              <p className="card-copy">{pkg.description}</p>
+              <ul className="package-list">
                 {pkg.bullets.map((bullet) => (
-                  <li key={bullet}>• {bullet}</li>
+                  <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
-            </div>
+            </article>
           ))}
         </div>
-      </div>
-    </main>
+      </section>
+
+      <section className="section">
+        <div className="grid-2">
+          <article className="info-block">
+            <p className="section-label">Why bands</p>
+            <h2 className="info-title">Pricing is intentionally constrained.</h2>
+            <p className="info-copy">
+              The goal is not to imitate a human freelancer improvising prices. The goal is to let the operator quote inside a safe envelope and escalate when the request does not fit.
+            </p>
+          </article>
+          <article className="info-block">
+            <p className="section-label">Next step</p>
+            <h2 className="info-title">Submit a brief and get a real quote.</h2>
+            <p className="info-copy">
+              Tell the operator what you are launching, who it is for, and what action the page should drive.
+            </p>
+            <div className="button-row">
+              <Link href="/brief" className="button">
+                Start a project
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
+    </SiteShell>
   )
 }

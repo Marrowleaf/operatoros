@@ -1,14 +1,14 @@
+import './globals.css'
+
 export const metadata = {
   title: 'OperatorOS',
-  description: 'Control plane for AI-run internet businesses',
+  description: 'AI-run landing page delivery with quotes, approvals, payments, and replay built in.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'Inter, system-ui, sans-serif', background: '#09090b' }}>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

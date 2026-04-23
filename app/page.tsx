@@ -1,39 +1,122 @@
+import Link from 'next/link'
+
+import { SiteShell } from '@/components/site-shell'
+
+const steps = [
+  {
+    title: 'Bounded intake',
+    body: 'The operator captures the brief, scores complexity, and produces a quote inside a fixed policy range instead of freelancing promises.',
+  },
+  {
+    title: 'Immediate draft',
+    body: 'A first landing page draft is generated fast, previewable by the client, and tied to a real project record from minute one.',
+  },
+  {
+    title: 'Controlled delivery',
+    body: 'Payments, revisions, approvals, and logs all live in the same loop so risky actions stay bounded and auditable.',
+  },
+]
+
 export default function HomePage() {
   return (
-    <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '64px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <p style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#67e8f9' }}>OperatorOS Studio</p>
-        <h1 style={{ marginTop: 16, maxWidth: 860, fontSize: 'clamp(44px, 7vw, 72px)', lineHeight: 1.05 }}>
-          Your landing page, built by an AI operator.
-        </h1>
-        <p style={{ marginTop: 24, maxWidth: 760, color: '#d4d4d8', fontSize: 20, lineHeight: 1.6 }}>
-          OperatorOS Studio turns a founder brief into a quoted project, a generated draft, a tracked revision loop, and a final delivery workflow with approvals and replay built in.
-        </p>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 28 }}>
-          <a href="/brief" style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '14px 20px', textDecoration: 'none' }}>Start a project</a>
-          <a href="/pricing" style={{ borderRadius: 16, border: '1px solid #3f3f46', color: '#f4f4f5', fontWeight: 700, padding: '14px 20px', textDecoration: 'none' }}>See pricing</a>
-        </div>
-
-        <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', marginTop: 56 }}>
-          {[
-            ['1. Intake', 'Capture the brief, score complexity, and generate a bounded quote.'],
-            ['2. Draft', 'Generate the first landing page draft immediately and make it previewable.'],
-            ['3. Operate', 'Track revisions, payment state, approvals, and final delivery in one place.'],
-          ].map(([title, body]) => (
-            <div key={title} style={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: 24, padding: 24 }}>
-              <h2 style={{ margin: 0, fontSize: 24 }}>{title}</h2>
-              <p style={{ marginTop: 12, color: '#d4d4d8', lineHeight: 1.6 }}>{body}</p>
+    <SiteShell>
+      <section className="hero">
+        <div className="hero-grid">
+          <div>
+            <p className="eyebrow">OperatorOS Studio</p>
+            <h1 className="hero-title">An AI-run landing page service with a real operator loop.</h1>
+            <p className="hero-copy">
+              OperatorOS turns a founder brief into a quoted project, generated draft, revision workflow, payment step, and controlled delivery path.
+              It is a real operating system for an AI-run service business, not a fake mockup.
+            </p>
+            <div className="hero-actions">
+              <Link href="/brief" className="button">
+                Start a project
+              </Link>
+              <Link href="/pricing" className="button-secondary">
+                View pricing
+              </Link>
             </div>
+            <div className="hero-stats">
+              <div className="stat">
+                <strong>Real intake</strong>
+                <span>Every brief creates a real tracked project record.</span>
+              </div>
+              <div className="stat">
+                <strong>Bounded risk</strong>
+                <span>Quotes, approvals, and payments sit behind policy guardrails.</span>
+              </div>
+              <div className="stat">
+                <strong>Visible ops</strong>
+                <span>Drafts, revisions, and operator actions are reviewable end to end.</span>
+              </div>
+            </div>
+          </div>
+
+          <aside className="glass-panel hero-card" aria-label="How the operator works">
+            <p className="hero-card__label">What the system does</p>
+            <h2 className="hero-card__title">A delivery loop that behaves like an operator, not a brochure.</h2>
+            <ul className="hero-card__list">
+              <li>Quotes inside fixed package and escalation rules</li>
+              <li>Generates the first draft immediately after intake</li>
+              <li>Tracks revisions through the client portal</li>
+              <li>Blocks unsafe delivery behind approvals and payment state</li>
+            </ul>
+            <div className="inline-note">Guardrail principle: humans stay in the review role, not the default production role.</div>
+          </aside>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-header">
+          <div>
+            <p className="section-label">Three stages</p>
+            <h2 className="section-title">The service is designed to feel controlled, fast, and trustworthy.</h2>
+          </div>
+        </div>
+        <div className="grid-3">
+          {steps.map((step, index) => (
+            <article key={step.title} className="card">
+              <div className="card-kicker">0{index + 1}</div>
+              <h3 className="card-title">{step.title}</h3>
+              <p className="card-copy">{step.body}</p>
+            </article>
           ))}
         </div>
+      </section>
 
-        <div style={{ marginTop: 56, background: '#18181b', border: '1px solid #3f3f46', borderRadius: 28, padding: 28 }}>
-          <h2 style={{ margin: 0, fontSize: 32 }}>This is a real operator loop, not a fake mockup.</h2>
-          <p style={{ marginTop: 16, color: '#d4d4d8', maxWidth: 800, lineHeight: 1.7 }}>
-            The app now stores real project records on the server, produces real draft pages, records actions for replay, and blocks risky deliveries behind an approval queue. Humans are still only there for guardrails.
-          </p>
+      <section className="section">
+        <div className="grid-2">
+          <article className="info-block">
+            <p className="section-label">Why it feels better</p>
+            <h2 className="info-title">More signal, less vague AI fluff.</h2>
+            <p className="info-copy">
+              The site now clearly shows what happens after the brief: quote generation, draft production, client portal access, revision handling, payment state, and delivery controls.
+            </p>
+            <ul className="feature-list">
+              <li>Clear pricing bands instead of vague “contact us” ambiguity</li>
+              <li>A client portal for previews and revisions</li>
+              <li>Operator approvals for risky work</li>
+            </ul>
+          </article>
+
+          <article className="info-block">
+            <p className="section-label">Start point</p>
+            <h2 className="info-title">Submit a brief and get the loop moving.</h2>
+            <p className="info-copy">
+              The fastest way to judge the system is to run it. Start with your offer, audience, and CTA. OperatorOS will create a project, quote it, and produce the first draft.
+            </p>
+            <div className="button-row">
+              <Link href="/brief" className="button">
+                Start a project
+              </Link>
+              <Link href="/faq" className="button-ghost">
+                Read FAQ
+              </Link>
+            </div>
+          </article>
         </div>
-      </div>
-    </main>
+      </section>
+    </SiteShell>
   )
 }
