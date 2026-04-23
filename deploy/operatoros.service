@@ -1,0 +1,19 @@
+[Unit]
+Description=OperatorOS Next.js app
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/operatoros
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+Environment=OPERATOROS_DATA_PATH=/var/lib/operatoros/operatoros-db.json
+ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3000
+Restart=always
+RestartSec=5
+User=operatoros
+Group=operatoros
+
+[Install]
+WantedBy=multi-user.target

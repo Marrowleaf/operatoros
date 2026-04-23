@@ -7,17 +7,39 @@ type QuoteResponse = {
   quote:
     | { status: 'ok'; packageType: string; price: number; reason: string }
     | { status: 'escalate'; reason: string }
-  mode?: 'demo' | 'database'
+  mode?: 'persistent-file'
+  projectUrl?: string
+  previewUrl?: string
 }
 
-function Field({ label, name, textarea = false, required = true }: { label: string; name: string; textarea?: boolean; required?: boolean }) {
+function Field({
+  label,
+  name,
+  textarea = false,
+  required = true,
+}: {
+  label: string
+  name: string
+  textarea?: boolean
+  required?: boolean
+}) {
+  const style = {
+    width: '100%',
+    borderRadius: 16,
+    border: '1px solid #3f3f46',
+    background: '#09090b',
+    color: '#f4f4f5',
+    padding: '14px 16px',
+    font: 'inherit',
+  }
+
   return (
-    <label className="grid gap-2">
-      <span className="text-sm font-medium text-zinc-200">{label}</span>
+    <label style={{ display: 'grid', gap: 8 }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: '#e4e4e7' }}>{label}</span>
       {textarea ? (
-        <textarea required={required} name={name} className="min-h-28 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100" />
+        <textarea required={required} name={name} style={{ ...style, minHeight: 120 }} />
       ) : (
-        <input required={required} name={name} className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100" />
+        <input required={required} name={name} style={style} />
       )}
     </label>
   )
@@ -55,16 +77,16 @@ export default function BriefPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-xs uppercase tracking-[0.25em] text-cyan-300">OperatorOS Studio</p>
-        <h1 className="text-4xl font-semibold">Tell the operator what you need.</h1>
-        <p className="mt-4 max-w-2xl text-zinc-400">
-          Give a clear brief and the system will generate the best-fit quote and create the project workspace.
+    <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '64px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+        <p style={{ marginBottom: 12, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#67e8f9' }}>OperatorOS Studio</p>
+        <h1 style={{ fontSize: 'clamp(38px, 6vw, 60px)', margin: 0 }}>Tell the operator what you need.</h1>
+        <p style={{ marginTop: 18, maxWidth: 700, color: '#d4d4d8', lineHeight: 1.7 }}>
+          Submit a brief and the system will create a real project record, produce a bounded quote, and generate the first landing page draft immediately.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-10 grid gap-6 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <form onSubmit={onSubmit} style={{ marginTop: 32, display: 'grid', gap: 20, borderRadius: 28, border: '1px solid #3f3f46', background: '#18181b', padding: 24 }}>
+          <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <Field label="Your name" name="name" />
             <Field label="Email" name="email" />
           </div>
@@ -73,28 +95,36 @@ export default function BriefPage() {
           <Field label="Who is it for?" name="targetAudience" />
           <Field label="What action should the visitor take?" name="primaryGoal" />
           <Field label="Which package sounds closest?" name="packageHint" required={false} />
-          <button disabled={loading} className="rounded-2xl bg-cyan-300 px-5 py-3 font-semibold text-zinc-950 disabled:opacity-60">
+          <button disabled={loading} style={{ borderRadius: 18, background: '#67e8f9', color: '#111827', fontWeight: 700, border: 0, padding: '14px 20px', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Generating quote…' : 'Generate my quote'}
           </button>
         </form>
 
         {error ? (
-          <div className="mt-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-200">{error}</div>
+          <div style={{ marginTop: 24, borderRadius: 18, border: '1px solid rgba(244,63,94,0.35)', background: 'rgba(244,63,94,0.12)', padding: 18, color: '#fecdd3' }}>{error}</div>
         ) : null}
 
         {result ? (
-          <div className="mt-6 rounded-3xl border border-cyan-400/30 bg-cyan-400/10 p-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-cyan-200">Quote result {result.mode === 'demo' ? '(demo mode)' : ''}</p>
+          <div style={{ marginTop: 24, borderRadius: 28, border: '1px solid rgba(103,232,249,0.35)', background: 'rgba(103,232,249,0.12)', padding: 24 }}>
+            <p style={{ margin: 0, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#a5f3fc' }}>Quote result {result.mode ? `(${result.mode})` : ''}</p>
             {result.quote.status === 'ok' ? (
               <>
-                <h2 className="mt-2 text-2xl font-semibold">{result.quote.packageType} — £{result.quote.price}</h2>
-                <p className="mt-3 text-zinc-200">{result.quote.reason}</p>
-                <p className="mt-4 text-sm text-zinc-300">Project ID: {result.projectId}</p>
+                <h2 style={{ marginTop: 10, marginBottom: 0, fontSize: 30 }}>{result.quote.packageType} — £{result.quote.price}</h2>
+                <p style={{ marginTop: 12, color: '#ecfeff', lineHeight: 1.6 }}>{result.quote.reason}</p>
+                <p style={{ marginTop: 12, color: '#d4d4d8' }}>Project ID: {result.projectId}</p>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
+                  {result.projectUrl ? (
+                    <a href={result.projectUrl} style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Open project portal</a>
+                  ) : null}
+                  {result.previewUrl ? (
+                    <a href={result.previewUrl} style={{ borderRadius: 16, border: '1px solid #67e8f9', color: '#ecfeff', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Preview draft</a>
+                  ) : null}
+                </div>
               </>
             ) : (
               <>
-                <h2 className="mt-2 text-2xl font-semibold">Needs escalation</h2>
-                <p className="mt-3 text-zinc-200">{result.quote.reason}</p>
+                <h2 style={{ marginTop: 10, marginBottom: 0, fontSize: 30 }}>Needs escalation</h2>
+                <p style={{ marginTop: 12, color: '#ecfeff', lineHeight: 1.6 }}>{result.quote.reason}</p>
               </>
             )}
           </div>

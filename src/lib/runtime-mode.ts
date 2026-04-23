@@ -1,9 +1,9 @@
-export type RuntimeMode = 'database' | 'demo'
+export type RuntimeMode = 'persistent-file'
 
 export function shouldUseDatabase() {
-  return Boolean(process.env.DATABASE_URL)
+  return false
 }
 
 export function getRuntimeMode(): RuntimeMode {
-  return shouldUseDatabase() ? 'database' : 'demo'
+  return 'persistent-file'
 }

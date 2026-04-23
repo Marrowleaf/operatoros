@@ -1,36 +1,36 @@
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-6xl">
-        <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">OperatorOS Studio</p>
-        <h1 className="mt-4 max-w-4xl text-5xl font-semibold leading-tight">
+    <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '64px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+        <p style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.25em', color: '#67e8f9' }}>OperatorOS Studio</p>
+        <h1 style={{ marginTop: 16, maxWidth: 860, fontSize: 'clamp(44px, 7vw, 72px)', lineHeight: 1.05 }}>
           Your landing page, built by an AI operator.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-zinc-400">
-          OperatorOS Studio turns your brief into a real launch page fast — quote, draft, revisions, and delivery handled by an AI-run workflow with human guardrails.
+        <p style={{ marginTop: 24, maxWidth: 760, color: '#d4d4d8', fontSize: 20, lineHeight: 1.6 }}>
+          OperatorOS Studio turns a founder brief into a quoted project, a generated draft, a tracked revision loop, and a final delivery workflow with approvals and replay built in.
         </p>
-        <div className="mt-8 flex gap-4">
-          <a href="/brief" className="rounded-2xl bg-cyan-300 px-5 py-3 font-semibold text-zinc-950">Get your page</a>
-          <a href="/pricing" className="rounded-2xl border border-zinc-700 px-5 py-3 font-semibold text-zinc-100">See pricing</a>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 28 }}>
+          <a href="/brief" style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '14px 20px', textDecoration: 'none' }}>Start a project</a>
+          <a href="/pricing" style={{ borderRadius: 16, border: '1px solid #3f3f46', color: '#f4f4f5', fontWeight: 700, padding: '14px 20px', textDecoration: 'none' }}>See pricing</a>
         </div>
 
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
+        <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', marginTop: 56 }}>
           {[
-            ['Send the brief', 'Tell us what you are launching, who it is for, and what action the page should drive.'],
-            ['Get a quote', 'The operator returns the best-fit package inside fixed pricing rules.'],
-            ['Receive your draft', 'The system generates the first landing page draft and handles revisions.'],
+            ['1. Intake', 'Capture the brief, score complexity, and generate a bounded quote.'],
+            ['2. Draft', 'Generate the first landing page draft immediately and make it previewable.'],
+            ['3. Operate', 'Track revisions, payment state, approvals, and final delivery in one place.'],
           ].map(([title, body]) => (
-            <div key={title} className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-              <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="mt-3 text-zinc-400">{body}</p>
+            <div key={title} style={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: 24, padding: 24 }}>
+              <h2 style={{ margin: 0, fontSize: 24 }}>{title}</h2>
+              <p style={{ marginTop: 12, color: '#d4d4d8', lineHeight: 1.6 }}>{body}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-16 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-8">
-          <h2 className="text-2xl font-semibold">Yes — the operator is really AI-run.</h2>
-          <p className="mt-4 max-w-3xl text-zinc-400">
-            The AI handles quoting, draft generation, revision processing, and delivery workflows. Humans are there for guardrails, approvals on risky actions, and emergency intervention — not hidden production work.
+        <div style={{ marginTop: 56, background: '#18181b', border: '1px solid #3f3f46', borderRadius: 28, padding: 28 }}>
+          <h2 style={{ margin: 0, fontSize: 32 }}>This is a real operator loop, not a fake mockup.</h2>
+          <p style={{ marginTop: 16, color: '#d4d4d8', maxWidth: 800, lineHeight: 1.7 }}>
+            The app now stores real project records on the server, produces real draft pages, records actions for replay, and blocks risky deliveries behind an approval queue. Humans are still only there for guardrails.
           </p>
         </div>
       </div>

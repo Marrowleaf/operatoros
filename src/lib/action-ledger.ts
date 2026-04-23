@@ -1,35 +1,40 @@
-import type { PrismaClient } from '@prisma/client'
+import { createId, nowIso, updateDb } from '@/src/lib/store'
 
 type ActionRecordInput = {
-  prisma: PrismaClient
   projectId?: string
   type: string
   riskLevel?: 'low' | 'medium' | 'high'
   status?: 'success' | 'blocked' | 'pending' | 'failed'
   reason?: string
-  inputJson?: unknown
-  outputJson?: unknown
+  input?: unknown
+  output?: unknown
 }
 
 export async function recordAction({
-  prisma,
   projectId,
   type,
   riskLevel = 'low',
   status = 'success',
   reason,
-  inputJson,
-  outputJson,
+  input,
+  output,
 }: ActionRecordInput) {
-  return prisma.action.create({
-    data: {
-      projectId,
+  const createdAt = nowIso()
+
+  return updateDb((db) => {
+    const action = {
+      id: createId(),
+      projectId: projectId ?? null,
       type,
       riskLevel,
       status,
-      reason,
-      inputJson: inputJson as never,
-      outputJson: outputJson as never,
-    },
+      reason: reason ?? null,
+      input,
+      output,
+      createdAt,
+    }
+
+    db.actions.push(action)
+    return action
   })
 }

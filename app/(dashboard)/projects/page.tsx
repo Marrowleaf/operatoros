@@ -1,44 +1,50 @@
-import { PrismaClient } from '@prisma/client'
-import { shouldUseDatabase } from '@/src/lib/runtime-mode'
+export const dynamic = 'force-dynamic'
 
-const prisma = new PrismaClient()
+import { getProjects } from '@/src/lib/store'
 
 export default async function ProjectsPage() {
-  const projects = shouldUseDatabase()
-    ? await prisma.project.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: { customer: true },
-        take: 20,
-      })
-    : [
-        {
-          id: 'demo-project',
-          status: 'quoted',
-          quotedPrice: 149,
-          customer: { name: 'Demo founder', email: 'demo@operatoros.local' },
-        },
-      ]
+  const projects = await getProjects()
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-4xl font-semibold">Projects</h1>
-        <div className="mt-8 grid gap-4">
-          {projects.map((project) => (
-            <div key={project.id} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="font-semibold">{project.customer.name}</h2>
-                  <p className="text-sm text-zinc-400">{project.customer.email}</p>
+    <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '56px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ color: '#67e8f9', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.24em' }}>Owner dashboard</p>
+            <h1 style={{ fontSize: 'clamp(34px, 6vw, 54px)', margin: '10px 0 0' }}>Projects</h1>
+          </div>
+          <a href="/brief" style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Create new project</a>
+        </div>
+
+        <div style={{ display: 'grid', gap: 16, marginTop: 28 }}>
+          {projects.map((project) => {
+            const publicProjectHref = `/project/${project.id}?token=${project.publicToken}`
+            const publicPreviewHref = `/preview/${project.id}?token=${project.publicToken}`
+
+            return (
+              <div key={project.id} style={{ borderRadius: 24, border: '1px solid #3f3f46', background: '#18181b', padding: 22 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: 22 }}>{project.customer?.name ?? 'Unknown customer'}</h2>
+                    <p style={{ marginTop: 8, marginBottom: 0, color: '#d4d4d8' }}>{project.customer?.email ?? 'No email'}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ color: '#d4d4d8' }}>Status: {project.status}</div>
+                    <div style={{ color: '#d4d4d8' }}>Quote: {project.quotedPrice ? `£${project.quotedPrice}` : '—'}</div>
+                  </div>
                 </div>
-                <div className="text-right text-sm text-zinc-300">
-                  <div>Status: {project.status}</div>
-                  <div>Quote: {project.quotedPrice ? `£${project.quotedPrice}` : '—'}</div>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
+                  <a href={`/projects/${project.id}`} style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Open workspace</a>
+                  <a href={publicProjectHref} style={{ borderRadius: 16, border: '1px solid #3f3f46', color: '#f4f4f5', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Customer portal</a>
+                  {project.memory.draft ? (
+                    <a href={publicPreviewHref} style={{ borderRadius: 16, border: '1px solid #3f3f46', color: '#f4f4f5', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Preview</a>
+                  ) : null}
+                  <a href={`/runs/${project.id}`} style={{ borderRadius: 16, border: '1px solid #3f3f46', color: '#f4f4f5', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Replay</a>
                 </div>
               </div>
-            </div>
-          ))}
-          {projects.length === 0 ? <p className="text-zinc-400">No projects yet.</p> : null}
+            )
+          })}
+          {projects.length === 0 ? <p style={{ color: '#a1a1aa' }}>No projects yet.</p> : null}
         </div>
       </div>
     </main>

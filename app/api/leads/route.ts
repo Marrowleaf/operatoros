@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       projectId: result.project.id,
       quote: result.quote,
       mode: result.mode,
+      projectUrl: `/project/${result.project.id}?token=${result.project.publicToken}`,
+      previewUrl: result.quote.status === 'ok' ? `/preview/${result.project.id}?token=${result.project.publicToken}` : null,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid request'
