@@ -9,7 +9,9 @@ Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=HOSTNAME=127.0.0.1
 Environment=OPERATOROS_DATABASE_PATH=/var/lib/operatoros/operatoros-db.sqlite
-# Set OWNER_PASSWORD via a systemd drop-in or EnvironmentFile in production.
+Environment=OPERATOROS_BASE_URL=https://operatoros.example.com
+# Prefer OPERATOROS_USERS_JSON via a systemd drop-in or EnvironmentFile.
+# Legacy OWNER_PASSWORD fallback is still supported.
 ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3000
 Restart=always
 RestartSec=5

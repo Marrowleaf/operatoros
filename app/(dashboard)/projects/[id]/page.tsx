@@ -18,7 +18,7 @@ function actionButton() {
 
 export default async function ProjectWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await requireOwnerPage(`/projects/${id}`)
+  const session = await requireOwnerPage(`/projects/${id}`, ['owner', 'operator'])
   const project = await getProjectById(id)
 
   if (!project) {
@@ -35,6 +35,7 @@ export default async function ProjectWorkspacePage({ params }: { params: Promise
           <p style={{ color: '#67e8f9', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.24em' }}>Project workspace</p>
           <h1 style={{ marginTop: 10, marginBottom: 0, fontSize: 'clamp(34px, 6vw, 54px)' }}>{project.customer?.name ?? 'Unknown customer'}</h1>
           <p style={{ marginTop: 12, color: '#d4d4d8' }}>{project.customer?.email ?? 'No email'} · Status: {project.status}</p>
+          <p style={{ marginTop: 8, color: '#a1a1aa' }}>Signed in as {session.username} · {session.role}</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
             <a href={publicProjectHref} style={{ ...actionButton(), textDecoration: 'none', display: 'inline-block' }}>Open customer portal</a>
             {project.memory.draft ? <a href={publicPreviewHref} style={{ ...actionButton(), textDecoration: 'none', display: 'inline-block' }}>Open preview</a> : null}
@@ -46,6 +47,7 @@ export default async function ProjectWorkspacePage({ params }: { params: Promise
           </div>
         </section>
 
+        {session.role !== 'reviewer' ? (
         <section style={{ borderRadius: 24, border: '1px solid #3f3f46', background: '#18181b', padding: 24 }}>
           <h2 style={{ marginTop: 0 }}>Owner actions</h2>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -73,6 +75,7 @@ export default async function ProjectWorkspacePage({ params }: { params: Promise
             <button style={{ ...actionButton(), width: 'fit-content' }}>Regenerate draft</button>
           </form>
         </section>
+        ) : null}
 
         <section style={{ borderRadius: 24, border: '1px solid #3f3f46', background: '#18181b', padding: 24 }}>
           <h2 style={{ marginTop: 0 }}>Brief + draft summary</h2>

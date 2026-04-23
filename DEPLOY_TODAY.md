@@ -1,11 +1,12 @@
 # OperatorOS deployment today
 
 ## Current status
-OperatorOS is now running publicly on this server at:
-- `http://185.170.58.231`
+OperatorOS is now running publicly at:
+- `https://185.170.58.231.sslip.io`
+- fallback HTTP/IP: `http://185.170.58.231`
 
 It is served by:
-- `nginx` on port `80`
+- `nginx` reverse proxy
 - `systemd` service `operatoros`
 - `next start` bound to `127.0.0.1:3000`
 - unprivileged Linux user `operatoros`
@@ -20,30 +21,53 @@ It is served by:
 - project portal and preview are capability-token URLs:
   - `/project/[id]?token=...`
   - `/preview/[id]?token=...`
-- owner pages are protected in-app by owner login sessions:
+- checkout is live at:
+  - `/checkout/[id]?token=...`
+- operator pages are protected in-app by signed role sessions:
   - `/owner/login`
   - `/projects`
   - `/projects/[id]`
   - `/approvals`
   - `/runs/[id]`
-- owner APIs accept a signed owner session cookie
-- nginx basic auth + trusted owner header can still be kept as defense-in-depth for owner routes:
-  - `/api/projects/...`
-  - `/api/approvals/...`
+
+## Current auth accounts
+Configured live accounts:
+- owner: `operatoros`
+- operator: `ops`
+- reviewer: `reviewer`
+
+Passwords are stored in `/etc/operatoros.env` on the server.
 
 ## Data path
-Recommended live data path:
+Live data is stored in:
 - `OPERATOROS_DATABASE_PATH=/var/lib/operatoros/operatoros-db.sqlite`
 
-Legacy migration support:
-- if `OPERATOROS_DATA_PATH` still points at the old JSON snapshot and the sqlite file does not exist yet,
-  OperatorOS will import that JSON into a sibling `.sqlite` file on first boot.
+Legacy artifact that may still exist:
+- `/var/lib/operatoros/operatoros-db.json`
+
+## HTTPS
+Live certificate:
+- Let's Encrypt certificate for `185.170.58.231.sslip.io`
+
+Certbot manages renewal.
 
 ## Required production env
-At minimum set:
+Current server uses:
 ```bash
+OPERATOROS_BASE_URL=https://185.170.58.231.sslip.io
 OPERATOROS_DATABASE_PATH=/var/lib/operatoros/operatoros-db.sqlite
-OWNER_PASSWORD='<strong-password>'
+OPERATOROS_USERS_JSON=[...]
+```
+
+Optional for real external checkout:
+```bash
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+```
+
+Optional for intentional demo-mode sandbox checkout only:
+```bash
+OPERATOROS_ALLOW_SANDBOX_PAYMENTS=1
 ```
 
 ## Build and verify
@@ -59,58 +83,33 @@ npm run build
 mkdir -p /srv/operatoros /var/lib/operatoros
 rsync -a --delete --exclude '.git' --exclude 'data' /root/hermes/operatoros/ /srv/operatoros/
 chown -R operatoros:operatoros /srv/operatoros /var/lib/operatoros
-```
-
-## systemd service
-Install from:
-- `deploy/operatoros.service`
-
-Recommended: add the owner password in a systemd drop-in rather than hardcoding it in the unit file.
-
-Example:
-```bash
-mkdir -p /etc/systemd/system/operatoros.service.d
-cat >/etc/systemd/system/operatoros.service.d/env.conf <<'EOF'
-[Service]
-Environment=OWNER_PASSWORD=<strong-password>
-EOF
-
-cp deploy/operatoros.service /etc/systemd/system/operatoros.service
-systemctl daemon-reload
-systemctl enable --now operatoros
 systemctl restart operatoros
-systemctl status operatoros --no-pager
 ```
 
 ## nginx reverse proxy
-Install packages if needed:
-```bash
-apt-get update
-apt-get install -y nginx apache2-utils
-```
+Current site config lives at:
+- `/etc/nginx/sites-available/operatoros`
 
-Copy config:
+Validate and reload:
 ```bash
-cp deploy/nginx-operatoros.conf /etc/nginx/sites-available/operatoros
-rm -f /etc/nginx/sites-enabled/default
-ln -sf /etc/nginx/sites-available/operatoros /etc/nginx/sites-enabled/operatoros
 nginx -t
-systemctl restart nginx
+systemctl reload nginx
 ```
 
-## Optional extra protection for owner routes
-You can keep nginx basic auth in front of owner routes as an extra guardrail:
+## TLS / certbot
+Bootstrap domain currently in use:
+- `185.170.58.231.sslip.io`
+
+The certificate was issued with:
 ```bash
-htpasswd -bc /etc/nginx/.htpasswd-operatoros operatoros '<password>'
-systemctl reload nginx
+certbot --nginx -d 185.170.58.231.sslip.io --non-interactive --agree-tos --register-unsafely-without-email --redirect
 ```
 
 ## Verify deployment
 ```bash
-curl -I http://127.0.0.1
-curl -I http://185.170.58.231
-curl -I http://127.0.0.1/owner/login
-curl -I http://127.0.0.1/projects
+curl -I https://185.170.58.231.sslip.io
+curl -I https://185.170.58.231.sslip.io/owner/login
+curl -I https://185.170.58.231.sslip.io/projects
 systemctl status operatoros --no-pager
 systemctl status nginx --no-pager
 ```
@@ -122,7 +121,7 @@ Expected:
 - both services show `active (running)`
 
 ## Remaining production upgrades
-- add HTTPS with a real domain
-- replace manual payment flow with a real checkout provider
-- upgrade owner auth beyond single-password auth
-- move from snapshot-style SQLite persistence to a more normalized schema if needed
+- swap sslip.io for a branded domain
+- configure live Stripe keys and webhook processing
+- move credentials management out of static env files
+- expand reporting / notifications

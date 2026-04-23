@@ -1,9 +1,9 @@
 import { resolveApproval } from '@/src/lib/workflows'
-import { getSafeRedirectPath, requireOwnerRequest } from '@/src/lib/request-auth'
+import { getSafeRedirectPath, requireRole } from '@/src/lib/request-auth'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    requireOwnerRequest(request)
+    requireRole(request, ['owner', 'reviewer'])
 
     const { id } = await params
     const contentType = request.headers.get('content-type') ?? ''
@@ -39,7 +39,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to resolve approval'
-    const status = message === 'Owner authorization required' ? 401 : message === 'Trusted owner origin required' ? 403 : 400
+    const status =
+      message === 'Owner authorization required'
+        ? 401
+        : message === 'Trusted owner origin required'
+          ? 403
+          : message === 'Insufficient permissions'
+            ? 403
+            : 400
     return new Response(JSON.stringify({ error: message }), { status })
   }
 }

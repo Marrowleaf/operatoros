@@ -22,6 +22,12 @@ export default async function PublicProjectPage({
   const paymentInstructions = project.memory.paymentInstructions
   const publicPreviewHref = project.memory.draft ? `/preview/${project.id}?token=${project.publicToken}` : null
   const publicActionHref = `/api/public/projects/${project.id}/actions`
+  const latestPaymentSession = project.paymentSessions[0] ?? null
+  const paymentsAvailable =
+    (Boolean(process.env.STRIPE_SECRET_KEY?.trim()) || process.env.OPERATOROS_ALLOW_SANDBOX_PAYMENTS === '1') &&
+    (project.paidAmount ?? 0) < (project.quotedPrice ?? 0) &&
+    project.status !== 'in_progress' &&
+    project.status !== 'delivered'
 
   return (
     <main style={{ minHeight: '100vh', background: '#09090b', color: '#f4f4f5', padding: '56px 24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -55,13 +61,24 @@ export default async function PublicProjectPage({
         <section style={{ marginTop: 24, border: '1px solid #3f3f46', borderRadius: 24, padding: 24, background: '#18181b' }}>
           <h2 style={{ marginTop: 0 }}>Move the project forward</h2>
           <div style={{ display: 'grid', gap: 16 }}>
-            <form method="post" action={publicActionHref} style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <input type="hidden" name="action" value="request_payment" />
-              <input type="hidden" name="redirectTo" value={`/project/${project.id}?token=${project.publicToken}`} />
-              <input type="hidden" name="token" value={project.publicToken} />
-              <button style={{ borderRadius: 16, border: 0, background: '#67e8f9', color: '#111827', padding: '12px 16px', fontWeight: 700, cursor: 'pointer' }}>Request payment instructions</button>
-            </form>
+            {paymentsAvailable ? (
+              <form method="post" action="/api/payments/create-link" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <input type="hidden" name="projectId" value={project.id} />
+                <input type="hidden" name="redirectTo" value={`/project/${project.id}?token=${project.publicToken}`} />
+                <input type="hidden" name="token" value={project.publicToken} />
+                <button style={{ borderRadius: 16, border: 0, background: '#67e8f9', color: '#111827', padding: '12px 16px', fontWeight: 700, cursor: 'pointer' }}>Open checkout</button>
+              </form>
+            ) : project.paidAmount >= (project.quotedPrice ?? 0) ? (
+              <p style={{ margin: 0, color: '#86efac', lineHeight: 1.7 }}>Payment is already recorded for this project.</p>
+            ) : (
+              <p style={{ margin: 0, color: '#fbbf24', lineHeight: 1.7 }}>Checkout is temporarily unavailable until a payment provider is configured.</p>
+            )}
             {paymentInstructions ? <p style={{ margin: 0, color: '#d4d4d8', lineHeight: 1.7 }}>{paymentInstructions}</p> : null}
+            {latestPaymentSession ? (
+              <p style={{ margin: 0, color: '#d4d4d8', lineHeight: 1.7 }}>
+                Latest payment session: <strong style={{ color: '#f4f4f5' }}>{latestPaymentSession.status}</strong>
+              </p>
+            ) : null}
 
             <form method="post" action={publicActionHref} style={{ display: 'grid', gap: 10 }}>
               <input type="hidden" name="action" value="request_revision" />

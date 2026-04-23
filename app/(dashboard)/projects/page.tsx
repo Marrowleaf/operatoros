@@ -4,7 +4,7 @@ import { getProjects } from '@/src/lib/store'
 import { requireOwnerPage } from '@/src/lib/owner-page-auth'
 
 export default async function ProjectsPage() {
-  await requireOwnerPage('/projects')
+  const session = await requireOwnerPage('/projects', ['owner', 'operator'])
   const projects = await getProjects()
 
   return (
@@ -14,6 +14,7 @@ export default async function ProjectsPage() {
           <div>
             <p style={{ color: '#67e8f9', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.24em' }}>Owner dashboard</p>
             <h1 style={{ fontSize: 'clamp(34px, 6vw, 54px)', margin: '10px 0 0' }}>Projects</h1>
+            <p style={{ color: '#a1a1aa', marginTop: 10, marginBottom: 0 }}>Signed in as {session.username} · {session.role}</p>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <a href="/brief" style={{ borderRadius: 16, background: '#67e8f9', color: '#111827', fontWeight: 700, padding: '12px 16px', textDecoration: 'none' }}>Create new project</a>

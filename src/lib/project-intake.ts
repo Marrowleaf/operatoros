@@ -81,7 +81,7 @@ export async function createProjectFromBrief(input: {
     project.deliveryUrl = quote.status === 'ok' ? `/preview/${project.id}` : null
     db.projects.push(project)
 
-    return { lead, customer, project, quote, mode: 'persistent-file' as const }
+    return { lead, customer, project, quote, mode: 'persistent-sqlite' as const }
   })
 
   await recordAction({

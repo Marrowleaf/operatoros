@@ -1,9 +1,9 @@
 import { regenerateDraft, requestDelivery, requestPayment, markProjectPaid } from '@/src/lib/workflows'
-import { getSafeRedirectPath, requireOwnerRequest } from '@/src/lib/request-auth'
+import { getSafeRedirectPath, requireRole } from '@/src/lib/request-auth'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    requireOwnerRequest(request)
+    requireRole(request, ['owner', 'operator'])
 
     const { id } = await params
     const contentType = request.headers.get('content-type') ?? ''
@@ -44,7 +44,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({ ok: true, payload })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Action failed'
-    const status = message === 'Owner authorization required' ? 401 : message === 'Trusted owner origin required' ? 403 : 400
+    const status =
+      message === 'Owner authorization required'
+        ? 401
+        : message === 'Trusted owner origin required'
+          ? 403
+          : message === 'Insufficient permissions'
+            ? 403
+            : 400
     return new Response(JSON.stringify({ error: message }), { status })
   }
 }

@@ -1,25 +1,68 @@
-import { getProjectById } from '@/src/lib/store'
+import { createCheckoutSessionForProject } from '@/src/lib/payments'
+import { getSafeRedirectPath } from '@/src/lib/request-auth'
+
+async function parseRequest(request: Request) {
+  const contentType = request.headers.get('content-type') ?? ''
+
+  if (request.method === 'GET') {
+    const { searchParams } = new URL(request.url)
+    return {
+      projectId: searchParams.get('projectId') ?? '',
+      token: searchParams.get('token') ?? '',
+      redirectTo: getSafeRedirectPath(searchParams.get('redirectTo')),
+    }
+  }
+
+  if (contentType.includes('application/json')) {
+    const body = await request.json().catch(() => ({}))
+    return {
+      projectId: typeof body?.projectId === 'string' ? body.projectId : '',
+      token: typeof body?.token === 'string' ? body.token : '',
+      redirectTo: getSafeRedirectPath(typeof body?.redirectTo === 'string' ? body.redirectTo : null),
+    }
+  }
+
+  const form = await request.formData()
+  return {
+    projectId: typeof form.get('projectId') === 'string' ? String(form.get('projectId')) : '',
+    token: typeof form.get('token') === 'string' ? String(form.get('token')) : '',
+    redirectTo: getSafeRedirectPath(typeof form.get('redirectTo') === 'string' ? String(form.get('redirectTo')) : null),
+  }
+}
+
+async function handle(request: Request) {
+  const { projectId, token, redirectTo } = await parseRequest(request)
+
+  if (!projectId) {
+    return new Response(JSON.stringify({ error: 'Project ID required' }), { status: 400 })
+  }
+
+  if (!token) {
+    return new Response(JSON.stringify({ error: 'Valid project access token required' }), { status: 401 })
+  }
+
+  try {
+    const session = await createCheckoutSessionForProject({
+      projectId,
+      publicToken: token,
+      baseUrl: null,
+    })
+
+    if (request.method !== 'GET' && redirectTo) {
+      return Response.redirect(new URL(session.checkoutUrl, request.url), 303)
+    }
+
+    return Response.json({
+      checkoutUrl: session.checkoutUrl,
+      provider: session.provider,
+      paymentSessionId: session.id,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Checkout creation failed'
+    return new Response(JSON.stringify({ error: message }), { status: 400 })
+  }
+}
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}))
-  const projectId = typeof body?.projectId === 'string' ? body.projectId : ''
-  const project = projectId ? await getProjectById(projectId) : null
-
-  if (!project) {
-    return new Response(JSON.stringify({ error: 'Project not found' }), { status: 404 })
-  }
-
-  const amount = Number(body?.amount ?? project.quotedPrice ?? 0)
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return new Response(JSON.stringify({ error: 'Invalid amount' }), { status: 400 })
-  }
-
-  const reference = project.id.slice(0, 8).toUpperCase()
-
-  return Response.json({
-    checkoutUrl: `/project/${project.id}`,
-    mode: 'manual-review',
-    instructions: `Manual payment placeholder for now. Send the amount and use reference ${reference}. Then mark the project paid from the owner dashboard.`,
-  })
+  return handle(request)
 }

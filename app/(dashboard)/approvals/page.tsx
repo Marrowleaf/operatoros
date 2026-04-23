@@ -4,7 +4,7 @@ import { getApprovals } from '@/src/lib/store'
 import { requireOwnerPage } from '@/src/lib/owner-page-auth'
 
 export default async function ApprovalsPage() {
-  await requireOwnerPage('/approvals')
+  const session = await requireOwnerPage('/approvals', ['owner', 'reviewer'])
   const approvals = await getApprovals('all')
 
   return (
@@ -18,6 +18,7 @@ export default async function ApprovalsPage() {
           </form>
         </div>
         <h1 style={{ marginTop: 10, fontSize: 'clamp(34px, 6vw, 54px)' }}>Approvals</h1>
+        <p style={{ color: '#a1a1aa', marginTop: 8 }}>Signed in as {session.username} · {session.role}</p>
         <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
           {approvals.map((approval) => (
             <div key={approval.id} style={{ borderRadius: 24, border: '1px solid #3f3f46', background: '#18181b', padding: 22 }}>
@@ -27,7 +28,7 @@ export default async function ApprovalsPage() {
                   <p style={{ marginTop: 8, color: '#d4d4d8', lineHeight: 1.6 }}>{approval.reason}</p>
                   <p style={{ marginTop: 8, color: '#a1a1aa' }}>Status: {approval.status}</p>
                 </div>
-                {approval.projectId ? <a href={`/projects/${approval.projectId}`} style={{ color: '#67e8f9', textDecoration: 'none', fontWeight: 700 }}>Open project</a> : null}
+                {approval.projectId && session.role !== 'reviewer' ? <a href={`/projects/${approval.projectId}`} style={{ color: '#67e8f9', textDecoration: 'none', fontWeight: 700 }}>Open project</a> : null}
               </div>
 
               {approval.status === 'pending' ? (

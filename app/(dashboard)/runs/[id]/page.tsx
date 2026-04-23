@@ -5,7 +5,7 @@ import { requireOwnerPage } from '@/src/lib/owner-page-auth'
 
 export default async function RunReplayPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await requireOwnerPage(`/runs/${id}`)
+  const session = await requireOwnerPage(`/runs/${id}`, ['owner', 'operator', 'reviewer'])
   const project = await getProjectById(id)
   const actions = await getActionsForProject(id)
 
@@ -20,6 +20,7 @@ export default async function RunReplayPage({ params }: { params: Promise<{ id: 
           </form>
         </div>
         <h1 style={{ marginTop: 10, fontSize: 'clamp(34px, 6vw, 54px)' }}>Project run history</h1>
+        <p style={{ color: '#a1a1aa', marginTop: 8 }}>Signed in as {session.username} · {session.role}</p>
         {project ? <p style={{ color: '#d4d4d8' }}>Project {project.id} · {project.customer?.email ?? 'Unknown customer'}</p> : null}
 
         <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
