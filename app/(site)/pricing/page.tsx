@@ -26,18 +26,21 @@ const packages = [
 export default function PricingPage() {
   return (
     <SiteShell>
-      <section className="hero">
-        <p className="eyebrow">Pricing</p>
+      <section className="hero hero--compact">
+        <div className="hero-badges">
+          <span className="badge badge--accent">Pricing</span>
+          <span className="badge">Bounded by policy</span>
+        </div>
         <h1 className="page-title">Simple packages. Bounded scope. Clear operator behaviour.</h1>
         <p className="page-copy">
           OperatorOS uses fixed pricing bands so the system can quote safely, consistently, and without inventing scope on the fly.
         </p>
       </section>
 
-      <section className="section">
+      <section className="section section--contrast">
         <div className="grid-3">
           {packages.map((pkg) => (
-            <article key={pkg.name} className="card">
+            <article key={pkg.name} className="card card--elevated">
               <div className="status-note">{pkg.name}</div>
               <h2 className="card-title">{pkg.price}</h2>
               <p className="card-copy">{pkg.description}</p>
@@ -53,14 +56,14 @@ export default function PricingPage() {
 
       <section className="section">
         <div className="grid-2">
-          <article className="info-block">
+          <article className="info-block info-block--feature">
             <p className="section-label">Why bands</p>
             <h2 className="info-title">Pricing is intentionally constrained.</h2>
             <p className="info-copy">
               The goal is not to imitate a human freelancer improvising prices. The goal is to let the operator quote inside a safe envelope and escalate when the request does not fit.
             </p>
           </article>
-          <article className="info-block">
+          <article className="info-block info-block--cta">
             <p className="section-label">Next step</p>
             <h2 className="info-title">Submit a brief and get a real quote.</h2>
             <p className="info-copy">

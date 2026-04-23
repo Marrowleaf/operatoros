@@ -34,21 +34,27 @@ export function SiteShell({
       <div className="site-shell">{children}</div>
       {!compact ? (
         <footer className="site-shell footer">
-          <div className="footer-card">
-            <div>
-              <strong>OperatorOS</strong>
-              <div>Autonomous service operations with bounded risk and visible logs.</div>
+          <div className="footer-card footer-card--rich">
+            <div className="footer-brand">
+              <span className="site-brand__mark">OS</span>
+              <div>
+                <strong>OperatorOS</strong>
+                <p>Autonomous service operations with bounded risk, visible logs, and real delivery controls.</p>
+              </div>
             </div>
-            <div className="footer-links">
-              <Link href="/pricing" className="site-link">
-                Pricing
-              </Link>
-              <Link href="/faq" className="site-link">
-                FAQ
-              </Link>
-              <Link href="/owner/login" className="site-link">
-                Operator login
-              </Link>
+            <div className="footer-meta">
+              <div className="footer-links">
+                <Link href="/pricing" className="site-link">
+                  Pricing
+                </Link>
+                <Link href="/faq" className="site-link">
+                  FAQ
+                </Link>
+                <Link href="/owner/login" className="site-link">
+                  Operator login
+                </Link>
+              </div>
+              <div className="footer-note">Built for real AI-run internet businesses, not brochureware.</div>
             </div>
           </div>
         </footer>

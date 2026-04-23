@@ -24,18 +24,21 @@ const faqs = [
 export default function FAQPage() {
   return (
     <SiteShell>
-      <section className="hero">
-        <p className="eyebrow">FAQ</p>
+      <section className="hero hero--compact">
+        <div className="hero-badges">
+          <span className="badge badge--accent">FAQ</span>
+          <span className="badge">Trust before automation</span>
+        </div>
         <h1 className="page-title">Questions founders ask before trusting an AI-run operator.</h1>
         <p className="page-copy">
           The product only works if the behaviour is clear. These are the things clients usually want to understand before they submit a brief.
         </p>
       </section>
 
-      <section className="section">
+      <section className="section section--contrast">
         <div className="grid-2">
           {faqs.map(([question, answer]) => (
-            <article key={question} className="card">
+            <article key={question} className="card card--elevated">
               <h2 className="card-title">{question}</h2>
               <p className="card-copy">{answer}</p>
             </article>
@@ -44,7 +47,7 @@ export default function FAQPage() {
       </section>
 
       <section className="section">
-        <article className="info-block">
+        <article className="info-block info-block--cta">
           <p className="section-label">Ready to test it?</p>
           <h2 className="info-title">The cleanest proof is to run the workflow.</h2>
           <p className="info-copy">
